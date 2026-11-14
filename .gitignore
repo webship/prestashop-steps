@@ -1,0 +1,16 @@
+node_modules/
+tests/reports/*.json
+tests/reports/*.html
+tests/reports/*.pdf
+screenshots/
+videos/
+*.log
+.DS_Store
+.claude/
+.playwright-mcp/
+
+# Notes and scratch files of the exploration round (kept local).
+exploration/
+
+# Local DDEV build of the shop the suite runs against (CI builds the same in a temp dir).
+site/
