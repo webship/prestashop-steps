@@ -662,7 +662,7 @@ When(/^(I |we )*add the product to the cart$/, async function (pronounCase) {
   const button = productForm(this).locator('button[data-button-action="add-to-cart"]').first();
   await actOrExplain('add', 'the product to the cart', async () => {
     await button.waitFor({ state: 'visible', timeout: budget(this) });
-    if (await button.isDisabled()) throw new Error('"Add to cart" is disabled: ' + (clean(await page.locator('#product-availability').innerText().catch(() => '')) || 'the product cannot be ordered') + '.');
+    if (await button.isDisabled()) throw new Error('"Add to cart" is disabled: ' + (clean(await page.locator('#product-availability').innerText({ timeout: 1000 }).catch(() => '')) || 'the product cannot be ordered') + '.');
     await button.click();
     await page.locator('#blockcart-modal.show').waitFor({ state: 'visible', timeout: budget(this) });
   }, PAGE_HINT + ' After the click the shop opens the dialog "Added to your cart" (#blockcart-modal).');
@@ -895,7 +895,7 @@ Then(/^the cart should( not)* have the voucher "([^"]*)"$/, async function (notC
     label: `the voucher "${name}" in the cart`,
     hint: 'Applied vouchers are the list "Added vouchers" of the cart summary, each with its discount and a remove link.',
     timeout: budget(this),
-    found: async () => clean(await this.page.locator('.js-cart-summary').first().innerText().catch(() => '')).slice(0, 200),
+    found: async () => clean(await this.page.locator('.js-cart-summary').first().innerText({ timeout: 1000 }).catch(() => '')).slice(0, 200),
   });
 });
 

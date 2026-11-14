@@ -16,6 +16,7 @@ const {
   budget,
   literal,
   clean,
+  go,
   settle,
   actOrExplain,
   assertPresence,
@@ -297,7 +298,7 @@ When(/^(I |we )*upload the product image "([^"]*)"$/, async function (pronounCas
     const deadline = Date.now() + 30000;
     while ((await stored()) <= before) {
       const failed = await page.locator('#product-images-dropzone .dz-preview.dz-error').count();
-      if (failed) throw new Error('The back office refused the image: ' + clean(await page.locator('#product-images-dropzone .dz-error').first().innerText().catch(() => '')));
+      if (failed) throw new Error('The back office refused the image: ' + clean(await page.locator('#product-images-dropzone .dz-error').first().innerText({ timeout: 1000 }).catch(() => '')));
       if (Date.now() > deadline) throw new Error('The image was not stored within 30 seconds.');
       await page.waitForTimeout(200);
     }
@@ -451,7 +452,7 @@ Given(/^no "([^"]*)" is left in "([^"]*)"$/, async function (text, menuPath) {
   const page = this.page;
   const openList = async () => {
     const link = await menuLink(this, menuPath);
-    await page.goto(new URL(await link.getAttribute('href'), page.url()).href);
+    await go(this, new URL(await link.getAttribute('href'), page.url()).href);
     await settle(this);
     const reset = page.locator('.js-reset-search:visible').first();
     if (await reset.count()) {
@@ -469,7 +470,7 @@ Given(/^no "([^"]*)" is left in "([^"]*)"$/, async function (text, menuPath) {
     await action.click({ timeout: budget(this) });
     await answerDialog(this, true);
     await page.locator('.alert-success:visible, .alert-danger:visible').first().waitFor({ state: 'visible', timeout: budget(this) }).catch(() => {});
-    const refused = await page.locator('.alert-danger:visible').first().innerText().catch(() => '');
+    const refused = await page.locator('.alert-danger:visible').first().innerText({ timeout: 1000 }).catch(() => '');
     if (refused) throw friendly({ message: `Could not delete "${text}" in "${menuPath}": ${clean(refused)}`, hint: 'Delete it by hand in the back office and read what blocks it.' });
   }
   throw friendly({ message: `"${text}" is still listed in "${menuPath}" after 25 deletions.`, hint: 'The text matches too many records, or the list does not delete them. Check the list by hand.' });
@@ -505,7 +506,7 @@ When(/^(I |we )*open the placed order in the back office$/, async function (pron
   const reference = memory(this).orderReference;
   if (!reference) throw friendly({ message: 'No order was placed in this scenario, so there is no placed order to open.', hint: 'Place an order in the shop first ("I place the order"): the step remembers its reference.' });
   const link = await menuLink(this, 'Orders > Orders');
-  await this.page.goto(new URL(await link.getAttribute('href'), this.page.url()).href);
+  await go(this, new URL(await link.getAttribute('href'), this.page.url()).href);
   await settle(this);
   const row = await gridRow(this, reference);
   // A paid order has a second icon in its row (the invoice, a download): take the view link.
@@ -704,7 +705,7 @@ Then(/^the order should( not)* contain the product "([^"]*)"$/, async function (
     label: `the product "${product}" in the order`,
     hint: 'The products are the table of the card "Products" on the order page.',
     timeout: budget(this),
-    found: async () => clean(await this.page.locator('#orderProductsPanel').innerText().catch(() => '')).slice(0, 200),
+    found: async () => clean(await this.page.locator('#orderProductsPanel').innerText({ timeout: 1000 }).catch(() => '')).slice(0, 200),
   });
 });
 
