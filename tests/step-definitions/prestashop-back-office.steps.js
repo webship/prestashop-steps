@@ -23,6 +23,7 @@ const {
   literal,
   clean,
   open,
+  go,
   settle,
   actOrExplain,
   assertPresence,
@@ -179,7 +180,7 @@ When(/^(I |we )*open "([^"]*)" in the back office menu$/, async function (pronou
     await link.click({ timeout: budget(this) });
   } else {
     // The item of a closed entry is in the page but hidden until its entry is open: follow its link.
-    await this.page.goto(new URL(href, this.page.url()).href);
+    await go(this, new URL(href, this.page.url()).href);
   }
   await settle(this);
 });
@@ -327,7 +328,7 @@ When(/^(I |we )*press the back office toolbar button "([^"]*)"$/, async function
  */
 When(/^(I |we )*open the back office path "([^"]*)"$/, async function (pronounCase, path) {
   const url = await adminPathUrl(this, path);
-  await this.page.goto(url).catch((err) => {
+  await go(this, url).catch((err) => {
     throw friendly({ action: 'open the back office path', target: path, cause: err, hint: 'The address did not load. A profile without the right to a page normally gets the access denied page (HTTP 403).' });
   });
   await settle(this);
@@ -928,7 +929,7 @@ When(/^(I |we )*go to the (next|previous) page of the list$/, async function (pr
   const link = this.page.locator(`.pagination-block a[data-role="${direction}-page-link"]:visible`).first();
   const disabled = await link.evaluate((node) => node.closest('li').classList.contains('disabled'), null, { timeout: budget(this) }).catch(() => true);
   if (disabled) {
-    const reading = clean(await this.page.locator('.pagination-block label.col-form-label').first().innerText().catch(() => ''));
+    const reading = clean(await this.page.locator('.pagination-block label.col-form-label').first().innerText({ timeout: 1000 }).catch(() => ''));
     throw friendly({ message: `Could not go to the ${direction} page of the list: there is none. ${reading ? 'The list reads "' + reading + '".' : 'The list shows no pagination.'}`, hint: 'A list whose records fit the smallest page shows no pagination; choose a smaller page size first.' });
   }
   await link.click();

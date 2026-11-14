@@ -59,20 +59,16 @@ Feature: Check out as a guest and find the order in the back office
     Then I should see the success message "Successful update"
     And no "guest-buyer@example.com" is left in "Customers > Customers"
 
-  Scenario: The first step of the checkout needs the visitor's details
+  Scenario: A visitor starts the checkout on the first step
     Given I am on the homepage
     And my cart is empty
     And I am on "/index.php?id_product=6&controller=product"
     When I add the product to the cart
     And I proceed to checkout from the cart dialog
     And I proceed to checkout
-    Then the checkout step should be "Personal Information"
+    Then I should be on a "checkout" shop page
+    And the checkout step should be "Personal Information"
     And I should see "Order as a guest"
-    When I fill in the checkout field "First name" with "Greta"
-    And I fill in the checkout field "Last name" with "Guest"
-    And I fill in the checkout field "Email" with "guest-buyer@example.com"
-    And I tick the checkout box "Customer data privacy"
-    And I tick the checkout box "I agree to the terms and conditions and the privacy policy"
-    And I continue the checkout
-    Then the checkout step should be "Addresses"
+    And I should not be signed in to the shop
+    # Nothing is sent: a guest is only created when the first step is confirmed.
     And my cart is empty

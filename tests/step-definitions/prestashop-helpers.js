@@ -83,6 +83,24 @@ async function open(world, url) {
   await waitForPageLoad(world.page, (world.minWaitTime && world.minWaitTime.page) || 3000);
 }
 
+/**
+ * Go to an address of the site. A navigation that is cut by a change of the
+ * network of the machine (another container network coming up or going down)
+ * is tried once more; any other failure is reported as it is.
+ *
+ * @param {object} world
+ * @param {string} url
+ */
+async function go(world, url) {
+  try {
+    return await world.page.goto(url);
+  } catch (err) {
+    if (!/ERR_NETWORK_CHANGED/.test(String(err && err.message))) throw err;
+    await world.page.waitForTimeout(1000);
+    return world.page.goto(url);
+  }
+}
+
 /** Wait for the page that a click started to load. */
 async function settle(world) {
   await world.page.waitForLoadState('load', { timeout: budget(world) }).catch(() => {});
@@ -221,7 +239,7 @@ async function sendEmployeeSignIn(world, email, password) {
   const page = world.page;
   await open(world, adminRoot(world) + '/');
   if (await employeeSignedIn(page)) {
-    await page.goto(await signOutLink(page).first().getAttribute('href').then((href) => new URL(href, page.url()).href));
+    await go(world, await signOutLink(page).first().getAttribute('href').then((href) => new URL(href, page.url()).href));
     await settle(world);
   }
   await actOrExplain('fill in the sign-in form of', 'the back office', async () => {
@@ -236,7 +254,7 @@ async function sendEmployeeSignIn(world, email, password) {
 async function employeeSignIn(world, account, handle) {
   await sendEmployeeSignIn(world, account.email, account.password);
   if (!(await employeeSignedIn(world.page))) {
-    const refused = clean(await world.page.locator('.alert-danger:visible').first().innerText().catch(() => ''));
+    const refused = clean(await world.page.locator('.alert-danger:visible').first().innerText({ timeout: 1000 }).catch(() => ''));
     throw friendly({
       message: `Could not log in to the back office as "${handle}" (${account.email}).` + (refused ? ` The page says: ${refused.replace(/^close\s*/, '')}` : ` The page is ${world.page.url().split('?')[0]}.`),
       hint: 'The employee must exist with that password: the site build script creates the accounts of worldParameters.employees.',
@@ -400,7 +418,7 @@ function dialog(world) {
 
 /** The title and the text of the open dialog. */
 async function dialogText(world) {
-  return clean(await dialog(world).innerText().catch(() => ''));
+  return clean(await dialog(world).innerText({ timeout: 1000 }).catch(() => ''));
 }
 
 /**
@@ -421,8 +439,11 @@ async function answerDialog(world, accept) {
   const controls = legacy ? box.locator(accept ? '#popup_ok' : '#popup_cancel') : box.locator('.modal-footer button:visible, .modal-footer a:visible, .modal-footer input[type="button"]:visible');
   const control = legacy || accept ? controls.last() : controls.first();
   await actOrExplain(accept ? 'confirm' : 'cancel', 'the dialog', () => control.click({ timeout: budget(world) }), DIALOG_HINT);
-  // The dialog closes, or the page it belongs to is replaced.
-  await page.waitForFunction((node) => !node.isConnected || !(node.offsetWidth || node.offsetHeight) || !node.classList.contains('show') && node.id !== 'popup_container', handle, { timeout: budget(world) }).catch(() => {});
+  // The dialog closes, or the page it belongs to is replaced: whichever comes first.
+  await Promise.race([
+    page.waitForEvent('framenavigated', { timeout: budget(world) }).catch(() => {}),
+    page.waitForFunction((node) => !node.isConnected || !(node.offsetWidth || node.offsetHeight) || (!node.classList.contains('show') && node.id !== 'popup_container'), handle, { timeout: budget(world) }).catch(() => {}),
+  ]);
   await settle(world);
 }
 
@@ -615,6 +636,7 @@ module.exports = {
   siteRoot,
   siteUrl,
   open,
+  go,
   settle,
   actOrExplain,
   assertPresence,
