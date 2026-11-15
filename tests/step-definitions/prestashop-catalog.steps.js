@@ -727,8 +727,8 @@ async function moduleCard(world, name) {
 }
 
 /**
- * Search the Module manager for a word: the list then shows only the cards
- * that match.
+ * Search the Module manager for a word or several words: the list then
+ * shows only the cards that match all of them.
  *
  * Example #1: When I search the modules for "Banner"
  * Example #2: When we search the modules for "Wire payment"
@@ -742,7 +742,11 @@ When(/^(I |we )*search the modules for "([^"]*)"$/, async function (pronounCase,
   await actOrExplain('search the modules for', word, async () => {
     await page.locator('.pstaggerAddTagInput:visible').first().fill(word, { timeout: budget(this) });
     await page.locator('#module-search-button').click();
-    await page.locator('.pstaggerTag').filter({ hasText: literal(word) }).first().waitFor({ state: 'visible', timeout: budget(this) });
+    // The search box makes one tag of each word ("Main menu" becomes the
+    // tags "Main" and "menu"), so the search is in place when every word has its tag.
+    for (const part of word.trim().split(/\s+/).filter(Boolean)) {
+      await page.locator('.pstaggerTag').filter({ hasText: literal(part) }).first().waitFor({ state: 'visible', timeout: budget(this) });
+    }
   }, 'The search of the Module manager is the box at the top of Modules > Module Manager with the button #module-search-button; each search word becomes a tag.');
 });
 
