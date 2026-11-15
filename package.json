@@ -1,6 +1,6 @@
 {
   "name": "@webship-js/prestashop-steps",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Cucumber step definitions for testing PrestaShop shops with webship-js: the back office (session, menu, lists, products, categories, orders, customers, discounts, modules, permissions) and the shop (catalog, search, product page, cart, checkout, customer account, contact).",
   "main": "tests/step-definitions/prestashop.steps.js",
   "files": [
