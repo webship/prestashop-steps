@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/webship/prestashop-steps/2.0.x/assets/logo.svg" alt="PrestaShop logo" width="96"></p>
+
 # @webship-js/prestashop-steps
 
 Cucumber step definitions for testing PrestaShop shops with [webship-js](https://github.com/webship/webship-js)
@@ -296,3 +298,7 @@ text), multistore, the one-page checkout, online payment modules, returns and cr
 ## License
 
 MIT
+
+## Logo
+
+The PrestaShop logo in this README comes from Simple Icons 16.37.0 (CC0-1.0), filled with the colour the set lists for the brand. The PrestaShop name and logo are trademarks of their owner; this pack is not affiliated with or endorsed by them.
