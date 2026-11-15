@@ -13,6 +13,11 @@ Feature: Modules of the shop
     Then I should see the module "Banner"
     But I should not see the module "Search bar"
 
+  Scenario: Search the installed modules for two words
+    When I search the modules for "Main menu"
+    Then I should see the module "Main menu"
+    But I should not see the module "Banner"
+
   @critical
   Scenario: Disable a module and enable it again
     Then the module "Banner" should be enabled
