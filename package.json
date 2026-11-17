@@ -59,8 +59,5 @@
   },
   "overrides": {
     "@cucumber/cucumber": "^12"
-  },
-  "dependencies": {
-    "webship-js": "~2.0.0"
   }
 }
