@@ -28,6 +28,98 @@ Scenario: A customer pays by check and the employee accepts the payment
 Every step was written from the real pages of a real install (PrestaShop 9.2.1, default theme) opened in a browser, and
 the whole suite of this repository runs against such an install on every push, twice in a row.
 
+## From nothing to a green run
+
+What the machine needs: Docker, [DDEV](https://ddev.com), git, curl, unzip, python3, and Node.js 20 or later with npm. PHP and the database run in DDEV's containers.
+
+**1. The shop.** The pack's own build script (the one CI runs) downloads the release, installs it with the demo catalog in a DDEV project, pins the back-office folder and creates the accounts of [Test users](#test-users); it takes two to five minutes.
+
+```bash
+git clone https://github.com/webship/prestashop-steps.git
+SITE_DIR="$PWD/prestashop-site" prestashop-steps/.github/scripts/build-ddev-prestashop.sh
+```
+
+The shop answers at `https://prestashop-ci.ddev.site` and its back office at `https://prestashop-ci.ddev.site/admin-steps/` (`PROJECT_NAME` and `ADMIN_FOLDER` change both; see [Run the suite of this repository](#run-the-suite-of-this-repository)).
+
+**2. A test project.**
+
+```bash
+mkdir prestashop-tests && cd prestashop-tests
+npm init -y
+npm install --save-dev webship-js @webship-js/prestashop-steps
+npx init-webship-js
+```
+
+`npx init-webship-js` writes `cucumber.js`, `playwright.config.ts`, the `tests/` folders with a first feature and the `npm test` scripts, and installs Chromium. npm usually runs it already when it installs webship-js; a second run changes nothing.
+
+**3. `cucumber.js`.** Replace the file with the wiring of the pack: the step files of webship-js and of the pack, the address of the shop, its back-office folder, and the accounts (the JSON of [Test users](#test-users)).
+
+```javascript
+module.exports = {
+  default: {
+    requireModule: ['tsx/cjs'],
+    require: [
+      'node_modules/webship-js/tests/step-definitions/**/*.js',
+      'node_modules/@webship-js/prestashop-steps/tests/step-definitions/**/*.js',
+      'tests/step-definitions/**/*.js',
+    ],
+    paths: ['tests/features/**/*.feature'],
+    format: ['@cucumber/pretty-formatter', 'json:tests/reports/cucumber_report.json'],
+    worldParameters: {
+      launchUrl: process.env.LAUNCH_URL || 'https://prestashop-ci.ddev.site',
+      backOffice: { folder: 'admin-steps' },
+      // The waits webship-js adds around each page, scenario and step (milliseconds).
+      minWaitTime: { page: 3000, before_scenario: 0, after_scenario: 0, before_step: 0, after_step: 0 },
+      employees: {
+        admin: { email: 'admin@example.com', password: 'Admin123456789!', name: 'Shop Admin' },
+        salesman: { email: 'salesman@example.com', password: 'Salesman123456789!', name: 'Sam Salesman' },
+      },
+      customers: {
+        customer: { email: 'customer@example.com', password: 'Customer123456789!', name: 'Clara Customer' },
+        shopper: { email: 'shopper@example.com', password: 'Shopper123456789!', name: 'Simon Shopper' },
+      },
+    },
+  },
+};
+```
+
+**4. A first feature**, `tests/features/first-run.feature`:
+
+```gherkin
+Feature: First run
+  Scenario: The administrator logs in to the back office
+    Given I am logged in to the back office as "admin"
+    Then the back office page title should be "Dashboard"
+
+  Scenario: A visitor searches the shop
+    Given I am on the homepage
+    When I search the shop for "mug"
+    Then I should see the product "Customizable mug" in the product list
+```
+
+**5. Run it.**
+
+```bash
+npm test
+```
+
+A green first run prints every step, then the summary (the starter feature of `npx init-webship-js` and the two scenarios above, passed) and the HTML report it wrote:
+
+```
+3 scenarios (3 passed)
+7 steps (7 passed)
+0m06.141s (executing steps: 0m06.107s)
+[webship-js] HTML report → …/prestashop-tests/tests/reports/cucumber_report.html
+```
+
+From there, copy the features of [`tests/features/`](tests/features/) (they also ship in the package, under `node_modules/@webship-js/prestashop-steps/tests/features/`): together they use every step of the pack.
+
+### What the suite tests
+
+The features of this repository run every step of the pack against the demo shop, twice in a row in CI on every change: logging in to and out of the back office (from a new page and from a legacy page), refused logins, the security token of back-office addresses, a limited employee's menu, start page and refused pages; the main menu, the page titles and the breadcrumb; the products list (filters, sorting, paging, bulk actions, the status switch) and a product from its creation to the shop and back (name, price, stock by a difference, a refused negative price, duplicate, delete, a dismissed delete); categories (create, rename, hide, delete, a required name); orders (filters, status and history, a private note); customers, their addresses and shopping carts; a cart rule used in the cart; modules (search, disable and enable); and in the shop: the home page, the menu and its submenu, categories with sorting, filters and paging, search with results, without results and its suggestions, the product page with a combination, the cart, the checkout as a guest (bank wire) and as a customer (check, cash on delivery) up to the order in the back office and the customer's order history, registration (and an e-mail address used twice), the customer account and its addresses, the contact form up to the customer service, and the 404 page.
+
+Not tested: the Classic theme and themes built on it, other languages of the back office, multistore, the one-page checkout, online payment modules, returns and credit slips, the import, the web service, and e-mail (the test shop sends none). What a run leaves on the shop: its three orders, cancelled (the platform cannot delete an order), the carts of its visitors and customers, and the address of the guest the checkout feature removes (the shop keeps it for the order); the first run also leaves the shop's own cart-rule flag, which PrestaShop resets when the last cart rule is deleted.
+
 ## Install
 
 ```bash
