@@ -23,6 +23,7 @@ Feature: Modules of the shop
     Then the module "Banner" should be enabled
     When I disable the module "Banner"
     Then the module "Banner" should be disabled
+    But I should not see the notification "Enable action on module ps_banner succeeded."
     When I enable the module "Banner"
     Then I should see the notification "Enable action on module ps_banner succeeded."
     And the module "Banner" should be enabled

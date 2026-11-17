@@ -31,6 +31,7 @@ Feature: A discount code from the back office to the cart
     Then I should see the field error "This voucher does not exist."
     When I apply the voucher "WEBSHIP10"
     Then the cart should have the voucher "Webship ten percent"
+    But I should not see the field error "This voucher does not exist."
     And the cart summary should show "Discount(s)" as "-$2.38"
     When I remove the voucher "Webship ten percent"
     Then the cart should not have the voucher "Webship ten percent"
