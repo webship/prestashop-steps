@@ -277,9 +277,15 @@ npx playwright install chromium
 # Builds a shop with the demo catalog and the accounts in a DDEV project (project "prestashop-ci").
 .github/scripts/build-ddev-prestashop.sh
 npm run test:examples      # every example and feature step against the step patterns
+npm run test:paths         # a feature or a scenario named on the command line runs alone
 npx cucumber-js --dry-run  # no undefined, no ambiguous step
 npx cucumber-js            # the suite
 ```
+
+`npx cucumber-js tests/features/shop-search.feature` runs one feature and
+`npx cucumber-js tests/features/shop-search.feature:<line>` one scenario (the line of its `Scenario:`); the paths of
+`cucumber.js` are left out when the command line names any. `FEATURES=tests/features/a.feature,tests/features/b.feature`
+runs a subset too.
 
 The build script installs the release from the command line, only with the modules of the open source release: no
 marketplace, account, hosted checkout, marketing or AI module is installed, and the shop sends no e-mail.

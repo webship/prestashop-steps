@@ -42,6 +42,11 @@ jobs:
       - name: Check the JSDoc examples and feature steps against the step regexes
         run: npm run test:examples
 
+
+      - name: Check that a feature named on the command line runs alone
+
+        run: npm run test:paths
+
       - name: Install DDEV
         uses: ddev/github-action-setup-ddev@v1
         with:
