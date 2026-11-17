@@ -73,4 +73,5 @@ Feature: The products list of the back office
     And the product price should be "13.9"
     And the product stock should be 300
     And the product should be in the category "Home Accessories"
+    But the product should not be in the category "Art"
     And the product should have 1 image

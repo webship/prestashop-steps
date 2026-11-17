@@ -50,10 +50,15 @@ Feature: Check out as a guest and find the order in the back office
     And the first row of the list should contain "G. Guest"
     And the first row of the list should contain "Bank transfer"
     And the first row of the list should contain "Awaiting bank wire payment"
-    When I open the placed order in the back office
+    # The order is not among the cancelled ones.
+    When I filter the list by "Status" with "Canceled"
+    Then I should not see the placed order in the list
+    When I reset the list filters
+    And I open the placed order in the back office
     Then the order page should be titled "from Greta Guest"
     And the order status should be "Awaiting bank wire payment"
     And the order should contain the product "Mug The best is yet to come"
+    But the order should not contain the product "Customizable mug"
     # Clean up: an order cannot be deleted, so it is cancelled (the stock comes back) and the guest is removed.
     When I change the order status to "Canceled"
     Then I should see the success message "Successful update"
