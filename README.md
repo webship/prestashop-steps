@@ -72,6 +72,28 @@ registries. The accounts are created once when the test shop is built
 without the browser); no step creates or deletes an employee. Never point the suite at a shop with real customers: it
 places orders.
 
+## Test users
+
+The accounts this repository's suite signs in with, exactly as `cucumber.js` lists them in `worldParameters.employees`
+and `worldParameters.customers` (the default values; `SHOP_<HANDLE>_EMAIL` and `SHOP_<HANDLE>_PASSWORD` replace them,
+for example `SHOP_ADMIN_PASSWORD`). [`.github/scripts/build-ddev-prestashop.sh`](.github/scripts/build-ddev-prestashop.sh)
+creates them on the local test shop, and CI does the same on the runner: the installer creates `admin` (SuperAdmin),
+[`.github/scripts/provision-accounts.php`](.github/scripts/provision-accounts.php) the three others. They are
+placeholder credentials of that throwaway shop, not of any real one.
+
+```json
+{
+  "employees": {
+    "admin": { "email": "admin@example.com", "password": "Admin123456789!", "name": "Shop Admin" },
+    "salesman": { "email": "salesman@example.com", "password": "Salesman123456789!", "name": "Sam Salesman" }
+  },
+  "customers": {
+    "customer": { "email": "customer@example.com", "password": "Customer123456789!", "name": "Clara Customer" },
+    "shopper": { "email": "shopper@example.com", "password": "Shopper123456789!", "name": "Simon Shopper" }
+  }
+}
+```
+
 ## What you need to know about the platform
 
 These are the things the steps handle for you, found while exploring a real shop:
