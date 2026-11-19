@@ -41,6 +41,17 @@ SITE_DIR="$PWD/prestashop-site" prestashop-steps/.github/scripts/build-ddev-pres
 
 The shop answers at `https://prestashop-ci.ddev.site` and its back office at `https://prestashop-ci.ddev.site/admin-steps/` (`PROJECT_NAME` and `ADMIN_FOLDER` change both; see [Run the suite of this repository](#run-the-suite-of-this-repository)).
 
+In the [Webship Workspace](https://github.com/webship/workspace), its PrestaShop plugin builds the shop instead, with the demo catalog, in a sites folder of the workspace (`test/` here; `dev/`, `sandboxes/` and `demos/` work the same):
+
+```bash
+bash core/scripts/plugins.sh --require prestashop --with-needs
+bash core/scripts/plugins.sh --activate prestashop --with-needs
+bash core/scripts/plugins.sh --install prestashop
+bash test/cmd-prestashop-project.sh mysite --install --add-users
+```
+
+That shop answers at `https://mysite.ddev.site`, its back office at `https://mysite.ddev.site/admin-workspace/`. Its accounts are the plugin's: the employees `administrator@example.com` (SuperAdmin) and `salesman@example.com`, the customers `customer@example.com` and `shopper@example.com`, each with the password `dD.123123ddd` (step 3 names them).
+
 **2. A test project.**
 
 ```bash
@@ -83,6 +94,8 @@ module.exports = {
 };
 ```
 
+On a shop from the Webship Workspace (step 1), the back office is `backOffice: { folder: 'admin-workspace' }` and the accounts are the plugin's: `admin: { email: 'administrator@example.com', password: 'dD.123123ddd', name: 'Shop Admin' }`, and the three others with their own address and the same password. Its address goes in `LAUNCH_URL` (step 5).
+
 **4. A first feature**, `tests/features/first-run.feature`:
 
 ```gherkin
@@ -103,6 +116,7 @@ Feature: First run
 npm test
 ```
 
+(`LAUNCH_URL=https://mysite.ddev.site npm test` for a shop at another address.)
 A green first run prints every step, then the summary (the starter feature of `npx init-webship-js` and the two scenarios above, passed) and the HTML report it wrote:
 
 ```
