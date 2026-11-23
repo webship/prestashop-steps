@@ -30,7 +30,7 @@ the whole suite of this repository runs against such an install on every push, t
 
 ## From nothing to a green run
 
-What the machine needs: Docker, [DDEV](https://ddev.com), git, curl, unzip, python3, and Node.js 20 or later with npm. PHP and the database run in DDEV's containers.
+What the machine needs: Docker, [DDEV](https://ddev.com), git, curl, unzip, python3, and Node.js 24 or later with npm. PHP and the database run in DDEV's containers.
 
 **1. The shop.** The pack's own build script (the one CI runs) downloads the release, installs it with the demo catalog in a DDEV project, pins the back-office folder and creates the accounts of [Test users](#test-users); it takes two to five minutes.
 
